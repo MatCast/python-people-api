@@ -34,7 +34,7 @@ class PeopleClient():
                 creds.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(
-                    self.CREDENTIALS_PATH, self.scopes)
+                    self.credentials_path, self.scopes)
                 creds = flow.run_local_server(port=0)
             # Save the credentials for the next run
             with open(self.token_path, 'wb') as token:
@@ -42,24 +42,30 @@ class PeopleClient():
         return creds
 
     def main(self):
-        self.service = build('people', 'v1', credentials=self.creds)
-
+        body = {
+            "emailAddresses": [{
+                "displayName": "work",
+                "value": "nuovo@work.com"
+            }, {}]
+        }
+        results = self.service.people().createContact(body=body).execute()
+        return results
+        # connections = results.get('connections', [])
         # Call the People API
-        print('List 10 connection names')
-        results = self.service.people().connections().list(
-            resourceName='people/me',
-            pageSize=10,
-            personFields='names,emailAddresses').execute()
-        connections = results.get('connections', [])
+        # results = self.service.people().connections().list(
+        #     resourceName='people/me',
+        #     pageSize=10,
+        #     personFields='names,emailAddresses').execute()
+        # connections = results.get('connections', [])
 
-        for person in connections:
-            names = person.get('names', [])
-            if names:
-                name = names[0].get('displayName')
-                # print(name)
-                print(self.creds)
+        # for person in connections:
+        #     names = person.get('names', [])
+        #     if names:
+        #         name = names[0].get('displayName')
+        #         # print(name)
+        #         print(self.creds)
 
 
 if __name__ == '__main__':
     client = PeopleClient()
-    client.main()
+    results = client.main()
