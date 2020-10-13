@@ -18,8 +18,7 @@ class PeopleClient():
         self.service = build('people', 'v1', credentials=self.creds)
 
     def get_auth_token(self):
-        """Shows basic usage of the People API.
-        Prints the name of the first 10 connections.
+        """Get Credientials and authorization token.
         """
         creds = None
         # The file token.pickle stores the user's access and refresh tokens,
@@ -41,6 +40,41 @@ class PeopleClient():
                 pickle.dump(creds, token)
         return creds
 
+    def __request_connections(self, page_size, fields, page_token):
+        fields = ','.join(fields)
+        return self.service.people().connections().list(
+            resourceName='people/me',
+            pageSize=page_size,
+            personFields='names,emailAddresses',
+            pageToken=page_token).execute()
+
+    # def __get_next_page_token(self, results):
+    #     results.
+
+    def get_all_connections(self, page_size=10, fields=['emailAddresses']):
+        """Get all the contacts from a person contacts."""
+        next_page_token = None
+        connections = []
+        while True:
+            results = self.__request_connections(page_size=page_size,
+                                                 fields=fields,
+                                                 page_token=next_page_token)
+            next_page_token = results.get('nextPageToken')
+            connections.extend(results.get('connections', []))
+            if not next_page_token:
+                return connections
+
+    def print_connections(self):
+        connections = self.get_all_connections(page_size=200)
+        print(len(connections))
+        for person in connections[:10]:
+            emails = person.get('emailAddresses', [])
+            if emails:
+                email = (emails[0].get('displayName') + ':' +
+                         emails[0].get('value'))
+                print(email)
+        return connections
+
     def main(self):
         body = {
             "emailAddresses": [{
@@ -50,22 +84,8 @@ class PeopleClient():
         }
         results = self.service.people().createContact(body=body).execute()
         return results
-        # connections = results.get('connections', [])
-        # Call the People API
-        # results = self.service.people().connections().list(
-        #     resourceName='people/me',
-        #     pageSize=10,
-        #     personFields='names,emailAddresses').execute()
-        # connections = results.get('connections', [])
-
-        # for person in connections:
-        #     names = person.get('names', [])
-        #     if names:
-        #         name = names[0].get('displayName')
-        #         # print(name)
-        #         print(self.creds)
 
 
 if __name__ == '__main__':
     client = PeopleClient()
-    results = client.main()
+    connections = client.print_connections()
