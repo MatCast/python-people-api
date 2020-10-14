@@ -51,8 +51,10 @@ class PeopleClient():
     # def __get_next_page_token(self, results):
     #     results.
 
-    def get_all_connections(self, page_size=10, fields=['emailAddresses']):
+    def get_all_connections(self, page_size=10, fields=None):
         """Get all the contacts from a person contacts."""
+        if not fields:
+            fields = ['emailAddresses']
         next_page_token = None
         connections = []
         while True:
