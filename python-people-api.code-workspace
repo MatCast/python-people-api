@@ -1,0 +1,10 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"python.linting.pylintPath": "C:\\Users\\ANNA\\Anaconda3\\envs\\google-api\\Scripts\\pylint.exe"
+	}
+}

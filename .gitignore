@@ -146,5 +146,5 @@ dmypy.json
 
 # Credentials
 # token pickle
-/token
+/tokens
 

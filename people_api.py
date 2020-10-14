@@ -6,16 +6,18 @@ from google.auth.transport.requests import Request
 
 
 class PeopleClient():
-    def __init__(self):
+    def __init__(self, tokens_dir='tokens'):
         """Client for google People API.
         """
         self.credentials_path = os.path.join('credentials', 'credentials.json')
-        self.token_dir = 'token'
-        self.token_path = os.path.join(self.token_dir, 'token.pickle')
+        self.tokens_dir = tokens_dir
+        self.token_path = os.path.join(self.tokens_dir, 'auth_token.pickle')
         # If modifying these scopes, delete the file token.pickle.
         self.scopes = ['https://www.googleapis.com/auth/contacts']
         self.creds = self.get_auth_token()
         self.service = build('people', 'v1', credentials=self.creds)
+        self.sync_token_path = os.path.join(self.tokens_dir, 'sync_token.txt')
+        self.last_sync_token = self.__get_last_sync_token()
 
     def get_auth_token(self):
         """Get Credientials and authorization token.
@@ -39,6 +41,15 @@ class PeopleClient():
             with open(self.token_path, 'wb') as token:
                 pickle.dump(creds, token)
         return creds
+
+    def __get_last_sync_token(self):
+        with open(self.sync_token_path, 'r') as f:
+            return f.read().strip()
+
+    def __write_sync_token(self, sync_token):
+        with open(self.sync_token_path, 'w') as f:
+            f.write(sync_token)
+        self.last_sync_token = sync_token
 
     def __request_connections(self, page_size, fields, page_token):
         fields = ','.join(fields)
